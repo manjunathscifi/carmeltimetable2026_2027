@@ -72,10 +72,12 @@
         .filter-group label {
             font-weight: 600;
             color: #555;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             font-size: 0.9rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: block;
+            line-height: 1.3;
         }
 
         .filter-group input,
@@ -93,7 +95,9 @@
             white-space: nowrap;
             min-width: 0;
             box-sizing: border-box;
-            height: 44px;
+            height: auto;
+            min-height: 44px;
+            line-height: 1.4;
         }
 
         .filter-group input[type="text"] {
@@ -432,10 +436,13 @@
 
             .filter-group input,
             .filter-group select {
-                padding: 14px 15px;
+                padding: 12px 15px;
                 font-size: 1rem;
                 -webkit-appearance: none;
                 appearance: none;
+                height: auto;
+                min-height: 48px;
+                line-height: 1.4;
             }
 
             .stats-bar {
