@@ -562,6 +562,7 @@
             font-size: 0.9rem;
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -571,8 +572,8 @@
             <p class="subtitle">Academic Year 2026 - 2027</p>
             <div class="visitor-count" style="margin-top: 15px; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1)); backdrop-filter: blur(10px); padding: 10px 24px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 <span style="font-size: 1.2rem;">🌍</span>
-                <span style="color: rgba(255,255,255,0.95); font-size: 0.95rem; font-weight: 500;">Users:</span>
-                <span id="visitorCount" style="color: #fff; font-weight: 700; font-size: 1.15rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Loading...</span>
+                <span style="color: rgba(255,255,255,0.95); font-size: 0.95rem; font-weight: 500;">Global Visitors:</span>
+                <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fmanjunathscifi.github.io%2Fcarmeltimetable2026_2027&count_bg=%23667eea&title_bg=%23764ba2&icon=&icon_color=%23E7E7E7&title=Global+Visitors&edge_flat=false" alt="Global Visitor Count" style="height: 22px;">
             </div>
         </div>
 
@@ -610,7 +611,10 @@
                 </div>
             </div>
             <div class="stats-bar">
-                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
+                    <span class="stat-pill" style="display: flex; align-items: center; padding: 6px 12px;">
+                        <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fmanjunathscifi.github.io%2Fcarmeltimetable2026_2027&count_bg=%23667eea&title_bg=%23764ba2&icon=&icon_color=%23E7E7E7&title=Global+Visitors&edge_flat=false" alt="Global Visitor Count" style="height: 18px;">
+                    </span>
                     <span class="stat-pill" id="totalCount">Total: 0</span>
                     <span class="stat-pill" id="filteredCount">Showing: 0</span>
                 </div>
@@ -863,88 +867,6 @@
     </script>
 
 
-    <!-- Global Visitor Counter -->
-    <script>
-        (function() {
-            const displayEl = document.getElementById('visitorCount');
-            if (!displayEl) return;
 
-            // Use a simple reliable approach with multiple fallback services
-            const COUNTER_URLS = [
-                // Primary: CountAPI (free, no signup)
-                'https://api.countapi.xyz/hit/carmel-college-schedule/visits',
-                // Backup 1: Alternative endpoint
-                'https://api.countapi.xyz/hit/carmel-schedule/visits',
-                // Backup 2: Get-only endpoint (if hit fails)
-                'https://api.countapi.xyz/get/carmel-college-schedule/visits'
-            ];
-
-            // Check if already counted this session
-            const sessionKey = 'carmel_visit_' + new Date().toDateString();
-            const alreadyCounted = sessionStorage.getItem(sessionKey);
-
-            function animateCount(target) {
-                const duration = 1500;
-                const startTime = performance.now();
-
-                function step(now) {
-                    const elapsed = now - startTime;
-                    const progress = Math.min(elapsed / duration, 1);
-                    const ease = 1 - Math.pow(1 - progress, 3);
-                    const current = Math.floor(target * ease);
-                    displayEl.textContent = current.toLocaleString();
-                    if (progress < 1) requestAnimationFrame(step);
-                }
-                requestAnimationFrame(step);
-            }
-
-            function fallbackToLocal() {
-                let count = parseInt(localStorage.getItem('carmelLocalCount') || '0');
-                if (!alreadyCounted) {
-                    count++;
-                    localStorage.setItem('carmelLocalCount', count);
-                    sessionStorage.setItem(sessionKey, 'true');
-                }
-                displayEl.textContent = count.toLocaleString();
-            }
-
-            function tryFetch(urlIndex) {
-                if (urlIndex >= COUNTER_URLS.length) {
-                    fallbackToLocal();
-                    return;
-                }
-
-                const url = COUNTER_URLS[urlIndex];
-
-                fetch(url, { 
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                })
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Status: ' + response.status);
-                    return response.json();
-                })
-                .then(function(data) {
-                    const count = data.value !== undefined ? data.value : data.count;
-                    if (count !== undefined && count !== null) {
-                        animateCount(count);
-                        localStorage.setItem('carmelLocalCount', count);
-                        if (!alreadyCounted) {
-                            sessionStorage.setItem(sessionKey, 'true');
-                        }
-                    } else {
-                        throw new Error('Invalid count data');
-                    }
-                })
-                .catch(function(err) {
-                    console.log('Counter API ' + (urlIndex + 1) + ' failed:', err.message);
-                    tryFetch(urlIndex + 1);
-                });
-            }
-
-            // Start fetching
-            tryFetch(0);
-        })();
-    </script>
 </body>
 </html>
