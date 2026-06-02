@@ -562,7 +562,6 @@
             font-size: 0.9rem;
         }
     </style>
-<base target="_blank">
 </head>
 <body>
     <div class="container">
@@ -573,7 +572,7 @@
             <div class="visitor-count" style="margin-top: 15px; display: inline-flex; align-items: center; gap: 8px; background: linear-gradient(135deg, rgba(255,255,255,0.25), rgba(255,255,255,0.1)); backdrop-filter: blur(10px); padding: 10px 24px; border-radius: 30px; border: 2px solid rgba(255,255,255,0.4); box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
                 <span style="font-size: 1.2rem;">🌍</span>
                 <span style="color: rgba(255,255,255,0.95); font-size: 0.95rem; font-weight: 500;">Global Visitors:</span>
-                <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fmanjunathscifi.github.io%2Fcarmeltimetable2026_2027&count_bg=%23667eea&title_bg=%23764ba2&icon=&icon_color=%23E7E7E7&title=Global+Visitors&edge_flat=false" alt="Global Visitor Count" style="height: 22px;">
+                <span id="visitorCount" style="color: #fff; font-weight: 700; font-size: 1.15rem; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">Loading...</span>
             </div>
         </div>
 
@@ -612,9 +611,7 @@
             </div>
             <div class="stats-bar">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                    <span class="stat-pill" style="display: flex; align-items: center; padding: 6px 12px;">
-                        <img src="https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fmanjunathscifi.github.io%2Fcarmeltimetable2026_2027&count_bg=%23667eea&title_bg=%23764ba2&icon=&icon_color=%23E7E7E7&title=Global+Visitors&edge_flat=false" alt="Global Visitor Count" style="height: 18px;">
-                    </span>
+                    
                     <span class="stat-pill" id="totalCount">Total: 0</span>
                     <span class="stat-pill" id="filteredCount">Showing: 0</span>
                 </div>
@@ -868,5 +865,69 @@
 
 
 
+
+    
+
+    <!-- Firebase Visitor Counter -->
+    <script>
+        (function() {
+            const firebaseUrl = 'https://carmel-college-schedule-ef7dc-default-rtdb.asia-southeast1.firebasedatabase.app';
+            const counterPath = '/visitors/total';
+            const displayEl = document.getElementById('visitorCount');
+
+            // Check if user has already been counted in this session
+            const hasVisited = sessionStorage.getItem('carmelVisited');
+
+            async function getCount() {
+                try {
+                    const response = await fetch(firebaseUrl + counterPath + '.json');
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+                    const data = await response.json();
+                    return (data !== null && data !== undefined) ? data : 0;
+                } catch (error) {
+                    console.error('Error fetching count:', error);
+                    return parseInt(localStorage.getItem('cachedVisitorCount')) || 0;
+                }
+            }
+
+            async function incrementCount() {
+                try {
+                    const currentCount = await getCount();
+                    const newCount = currentCount + 1;
+
+                    const response = await fetch(firebaseUrl + counterPath + '.json', {
+                        method: 'PUT',
+                        body: JSON.stringify(newCount),
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+
+                    if (!response.ok) throw new Error('HTTP ' + response.status);
+
+                    localStorage.setItem('cachedVisitorCount', newCount);
+                    return newCount;
+                } catch (error) {
+                    console.error('Error incrementing count:', error);
+                    return (parseInt(localStorage.getItem('cachedVisitorCount')) || 0) + 1;
+                }
+            }
+
+            async function initCounter() {
+                if (!hasVisited) {
+                    const count = await incrementCount();
+                    displayEl.textContent = count.toLocaleString();
+                    sessionStorage.setItem('carmelVisited', 'true');
+                } else {
+                    const count = await getCount();
+                    displayEl.textContent = count.toLocaleString();
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initCounter);
+            } else {
+                initCounter();
+            }
+        })();
+    </script>
 </body>
 </html>
