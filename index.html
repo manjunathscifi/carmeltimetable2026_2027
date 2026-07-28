@@ -1,6 +1,6 @@
 <!--
   Carmel College Classroom Schedule Finder
-  Copyright (c) 2026 [Dr. Manjunath T. nayak]. All Rights Reserved.
+  Copyright (c) 2026 [Dr. Manjunath T. Nayak]. All Rights Reserved.
   
   This software and associated documentation files are proprietary and confidential.
   Unauthorized copying, distribution, modification, or use of this software,
@@ -68,7 +68,7 @@
 
         .filter-grid {
             display: grid;
-            grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr 1.5fr;
+            grid-template-columns: 1.2fr 0.8fr 1fr 1.2fr 1.5fr auto;
             gap: 12px;
             margin-bottom: 15px;
             overflow-x: hidden;
@@ -344,6 +344,19 @@
             background: #f0f0ff;
         }
 
+        /* Free Rooms button in filter grid */
+        #btnFree:hover {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        #btnFree.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
         /* Grid View Styles */
         .grid-view {
             display: grid;
@@ -408,6 +421,7 @@
 
             .filter-group:nth-child(1) { grid-column: span 3; }
             .filter-group:nth-child(5) { grid-column: span 2; }
+            .filter-group:nth-child(6) { grid-column: span 1; }
         }
 
         @media (max-width: 768px) {
@@ -578,7 +592,7 @@
             top: 15px;
             right: 15px;
             font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.5);
+            color: rgba(255, 255, 255, 0.808);
             text-align: right;
             line-height: 1.4;
             font-weight: 300;
@@ -642,6 +656,10 @@
                         <option value="">All Subjects</option>
                     </select>
                 </div>
+                <div class="filter-group">
+                    <label>🆓 Free Rooms</label>
+                    <button class="view-btn" onclick="setView('free')" id="btnFree" style="width: 100%; height: 44px; min-height: 44px; padding: 10px 15px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: 2px solid #667eea; background: white; color: #667eea; transition: all 0.3s ease;">Show Free Rooms</button>
+                </div>
             </div>
             <div class="stats-bar">
                 <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
@@ -679,6 +697,64 @@
             </div>
 
             <div id="gridView" class="grid-view hidden">
+            </div>
+            <div id="freeView" class="hidden">
+                <div class="free-filters" style="background: linear-gradient(135deg, #f8f9ff 0%, #e8eaff 100%); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 2px solid #667eea;">
+                    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.1rem;">🔍 Find Free Classrooms</h3>
+                    <div class="filter-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
+                        <div class="filter-group">
+                            <label>Select Day</label>
+                            <select id="freeDayFilter" onchange="updateFreeRooms()">
+                                <option value="">-- Choose Day --</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Select Time Slot</label>
+                            <select id="freeTimeFilter" onchange="updateFreeRooms()">
+                                <option value="">-- Choose Time --</option>
+                                <option value="8.15 am">8:15 AM</option>
+                                <option value="9.15 am">9:15 AM</option>
+                                <option value="10.30 am">10:30 AM</option>
+                                <option value="11.30 am">11:30 AM</option>
+                                <option value="12.30 pm">12:30 PM</option>
+                                <option value="2.00 pm">2:00 PM</option>
+                                <option value="3.00 pm">3:00 PM</option>
+                            </select>
+                        </div>
+                        <div class="filter-group" style="display:flex; align-items:flex-end;">
+                            <button class="clear-btn" onclick="clearFreeFilters()" style="width:100%;">Clear</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="freeResults" style="display:none;">
+                    <div class="results-header" style="margin-bottom: 15px;">
+                        <h2 id="freeResultsTitle">📋 Free Classrooms</h2>
+                        <span class="count-badge" id="freeCountBadge">0 rooms</span>
+                    </div>
+
+                    <div id="freeRoomsGrid" class="grid-view">
+                        <!-- Free rooms will be rendered here -->
+                    </div>
+
+                    <div id="freeNoResults" class="no-results hidden">
+                        <div class="no-results-icon">🏫</div>
+                        <h3>No free classrooms found</h3>
+                        <p>All classrooms are occupied at this time slot</p>
+                    </div>
+                </div>
+
+                <div id="freePrompt" class="no-results" style="padding: 40px 20px;">
+                    <div class="no-results-icon" style="font-size: 3rem;">📅</div>
+                    <h3>Select a Day and Time</h3>
+                    <p>Choose a day and time slot above to see which classrooms are available</p>
+                </div>
             </div>
 
             <div id="noResults" class="no-results hidden">
@@ -1998,7 +2074,125 @@ const subjects = [
                 initCounter();
             }
         })();
-    </script>
+    
+        // ========== FREE CLASSROOMS FUNCTIONALITY ==========
+        const excludedRoomsForFreeTab = [
+            "Auditorium", "Library", "NCC", "NSS", "Sports",
+            "UG LAB 3: Psychology Lab", "UG LAB 5: FY/SY Chemistry Lab.",
+            "UG LAB 7: SY/TY Chemistry Lab.", "UG LAB 9: SY/TY Chemistry Lab.",
+            "UG LAB 10: FY/SY Physics Lab.", "UG LAB 11: TY Physics Lab.",
+            "UG LAB 13: FY/SY Botany/Zoology Lab.", "UG LAB 16: TY Botany Lab. cum Classroom",
+            "UG LAB 18: TY Zoology Lab. cum Classroom", "UGCR 21 (Physics)"
+        ];
+
+        const roomCapacity = {"UGCR 2": "20.0", "UGCR 3": "20.0", "UGCR 4": "20.0", "UGCR 5": "20.0", "UGCR 6": "20.0", "UGCR 7": "20.0", "UGCR 8": "20.0", "UGCR 9": "20.0", "UGCR 10": "20.0", "UGCR 11": "20.0", "UGCR 12": "20.0", "UGCR 13": "20.0", "UGCR 14": "20.0", "UGCR 15": "20.0", "UGCR 16": "20.0", "UGCR 17": "20.0", "UGCR 18": "20.0", "UGCR 19": "20.0", "UGCR 20": "20.0", "UGCR 21": "20.0", "UGCR 22": "20.0", "UGCR 23": "20.0", "UGCR 24": "20.0", "IQAC": "20.0", "UG LAB 2: Computer Lab": "25.0", "UG LAB 5: FY/SY Chemistry Lab.": "25.0", "UG LAB 7: SY/TY Chemistry Lab.": "25.0", "UG LAB 9: SY/TY Chemistry Lab.": "25.0", "UG LAB 10: FY/SY Physics Lab.": "25.0", "UG LAB 11: TY Physics Lab.": "25.0", "UG LAB 13: FY/SY Botany/Zoology Lab.": "25.0", "UG LAB 16: TY Botany Lab. cum Classroom": "25.0", "UG LAB 18: TY Zoology Lab. cum Classroom": "25.0", "Media Room": "N/A", "e Com": "N/A", "Sports": "100", "Media Room (Cap 25)": "25", "e Com (Cap 20)": "20", "Auditorium": "N/A", "Library": "N/A", "NSS": "N/A", "NCC": "N/A", "UG LAB 3: Psychology Lab": "N/A", "UGCR 2 (Economics)": "N/A", "UGCR 18 (Cap 30)": "30", "UGCR 10 (Commerce)": "N/A", "UGCR 13 (Math)": "N/A", "UGCR 4 (Hindi)": "N/A", "UGCR 7 (Cap 30)": "30", "UGCR 21 (Physics)": "N/A", "UGCR 17 (Pol. Sc)": "N/A", "UGCR 9 (Psychology)": "N/A", "UGCR 1 (English)": "N/A", "UGCR 8 (Cap 30)": "30", "UGCR 12 (Cap 15)": "15", "UGCR 22 (Cap 30)": "30", "UGCR 11 (Commerce)": "N/A", "UGCR 5 (Cap 30)": "30", "UGCR 6 (Cap 30)": "30", "UGCR 14 (Konkani)": "N/A", "UGCR 19 (Cap 30)": "30", "UGCR 23 (Cap 30)": "30", "UGCR 3 (History)": "N/A", "UGCR 24 (Cap 30)": "30", "UGCR 20 (Cap 30)": "30"};
+
+        function getAllClassrooms() {
+            const rooms = new Set();
+            scheduleData.forEach(item => rooms.add(item.room));
+            return Array.from(rooms).sort();
+        }
+
+        function getEligibleRooms() {
+            return getAllClassrooms().filter(room => !excludedRoomsForFreeTab.includes(room));
+        }
+
+        function getOccupiedRooms(day, time) {
+            const occupied = new Set();
+            scheduleData.forEach(item => {
+                if (item.day === day && item.time === time) {
+                    occupied.add(item.room);
+                }
+            });
+            return occupied;
+        }
+
+        function updateFreeRooms() {
+            const day = document.getElementById('freeDayFilter').value;
+            const time = document.getElementById('freeTimeFilter').value;
+
+            if (!day || !time) {
+                document.getElementById('freePrompt').style.display = 'block';
+                document.getElementById('freeResults').style.display = 'none';
+                return;
+            }
+
+            document.getElementById('freePrompt').style.display = 'none';
+            document.getElementById('freeResults').style.display = 'block';
+
+            const allEligibleRooms = getEligibleRooms();
+            const occupied = getOccupiedRooms(day, time);
+            const freeRooms = allEligibleRooms.filter(room => !occupied.has(room));
+
+            document.getElementById('freeResultsTitle').textContent = 
+                '📋 Free Classrooms — ' + day + ' at ' + time;
+            document.getElementById('freeCountBadge').textContent = 
+                freeRooms.length + ' room' + (freeRooms.length !== 1 ? 's' : '') + ' free';
+
+            const grid = document.getElementById('freeRoomsGrid');
+
+            if (freeRooms.length === 0) {
+                grid.innerHTML = '';
+                document.getElementById('freeNoResults').classList.remove('hidden');
+            } else {
+                document.getElementById('freeNoResults').classList.add('hidden');
+                grid.innerHTML = freeRooms.map(room => {
+                    const cap = roomCapacity[room] || 'N/A';
+                    const capBadge = cap !== 'N/A' ? '<span style="background:#667eea;color:white;padding:3px 10px;border-radius:10px;font-size:0.75rem;font-weight:600;">Cap: ' + cap + '</span>' : '';
+                    return `
+                    <div class="schedule-card" style="border-left: 4px solid #2ecc71;">
+                        <div class="card-header">
+                            <span class="card-room">🏫 ${room}</span>
+                            ${capBadge}
+                        </div>
+                        <div class="card-body">
+                            <div class="card-row">
+                                <strong>Status:</strong>
+                                <span style="color:#2ecc71;font-weight:600;">✅ Available</span>
+                            </div>
+                            <div class="card-row">
+                                <strong>Day:</strong> ${day}
+                            </div>
+                            <div class="card-row">
+                                <strong>Time:</strong> ${time}
+                            </div>
+                        </div>
+                    </div>`;
+                }).join('');
+            }
+        }
+
+        function clearFreeFilters() {
+            document.getElementById('freeDayFilter').value = '';
+            document.getElementById('freeTimeFilter').value = '';
+            document.getElementById('freePrompt').style.display = 'block';
+            document.getElementById('freeResults').style.display = 'none';
+        }
+
+        // Override setView to handle free view
+        const originalSetView = setView;
+        setView = function(view) {
+            currentView = view;
+            document.getElementById('btnTable').classList.toggle('active', view === 'table');
+            document.getElementById('btnGrid').classList.toggle('active', view === 'grid');
+            document.getElementById('btnFree').classList.toggle('active', view === 'free');
+
+            if (view === 'free') {
+                document.getElementById('tableView').classList.add('hidden');
+                document.getElementById('gridView').classList.add('hidden');
+                document.getElementById('freeView').classList.remove('hidden');
+                document.getElementById('noResults').classList.add('hidden');
+                document.getElementById('resultCount').parentElement.style.display = 'none';
+                document.querySelector('.results-header h2').style.display = 'none';
+            } else {
+                document.getElementById('freeView').classList.add('hidden');
+                document.getElementById('resultCount').parentElement.style.display = 'flex';
+                document.querySelector('.results-header h2').style.display = 'block';
+                renderResults();
+            }
+        };
+
+</script>
 
     <div class="designer-credit">
         Designed by<br>
