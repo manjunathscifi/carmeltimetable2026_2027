@@ -344,7 +344,7 @@
             background: #f0f0ff;
         }
 
-        /* Free Rooms button in filter grid */
+        /* Vacant Rooms button in filter grid */
         #btnFree:hover {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
@@ -657,8 +657,8 @@
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label>🆓 Free Classrooms</label>
-                    <button class="view-btn" onclick="setView('free')" id="btnFree" style="width: 100%; height: 44px; min-height: 44px; padding: 10px 15px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: 2px solid #667eea; background: white; color: #667eea; transition: all 0.3s ease;">Show Free Rooms</button>
+                    <label>🆓 Vacant Classrooms</label>
+                    <button class="view-btn" onclick="setView('free')" id="btnFree" style="width: 100%; height: 44px; min-height: 44px; padding: 10px 15px; border-radius: 10px; font-size: 0.95rem; font-weight: 600; cursor: pointer; border: 2px solid #667eea; background: white; color: #667eea; transition: all 0.3s ease;">Show Vacant Rooms</button>
                 </div>
             </div>
             <div class="stats-bar">
@@ -700,7 +700,7 @@
             </div>
             <div id="freeView" class="hidden">
                 <div class="free-filters" style="background: linear-gradient(135deg, #f8f9ff 0%, #e8eaff 100%); border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 2px solid #667eea;">
-                    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.1rem;">🔍 Find Free Classrooms</h3>
+                    <h3 style="color: #667eea; margin-bottom: 15px; font-size: 1.1rem;">🔍 Find Vacant Classrooms</h3>
                     <div class="filter-grid" style="grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
                         <div class="filter-group">
                             <label>Select Day</label>
@@ -735,7 +735,7 @@
 
                 <div id="freeResults" style="display:none;">
                     <div class="results-header" style="margin-bottom: 15px;">
-                        <h2 id="freeResultsTitle">📋 Free Classrooms</h2>
+                        <h2 id="freeResultsTitle">📋 Vacant Classrooms</h2>
                         <span class="count-badge" id="freeCountBadge">0 rooms</span>
                     </div>
 
